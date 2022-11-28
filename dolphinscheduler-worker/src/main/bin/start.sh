@@ -30,6 +30,10 @@ if [[ "$DOCKER" == "true" ]]; then
   JAVA_OPTS="${JAVA_OPTS} -XX:-UseContainerSupport"
 fi
 
+if [[ "$DEBUG" == "true" ]]; then
+  JAVA_OPTS="${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+fi
+
 $JAVA_HOME/bin/java $JAVA_OPTS \
   -cp "$DOLPHINSCHEDULER_HOME/conf":"$DOLPHINSCHEDULER_HOME/libs/*" \
   org.apache.dolphinscheduler.server.worker.WorkerServer

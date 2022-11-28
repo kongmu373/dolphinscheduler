@@ -19,6 +19,7 @@ package org.apache.dolphinscheduler.common.utils;
 
 import static java.util.Collections.emptyList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.common.constants.Constants;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetUtils {
 
+    private static final Pattern STS_PATTERN = Pattern.compile("-\\d+$"); // StatefulSet pattern
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
     private static final String NETWORK_PRIORITY_DEFAULT = "default";
     private static final String NETWORK_PRIORITY_INNER = "inner";
@@ -51,6 +53,8 @@ public class NetUtils {
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
     private static InetAddress LOCAL_ADDRESS = null;
     private static volatile String HOST_ADDRESS;
+    private static final int HOST_NAME_LENGTH = 2;
+    private static final int HOST_NAME_INDEX = 3;
 
     private NetUtils() {
         throw new UnsupportedOperationException("Construct NetUtils");
@@ -77,12 +81,50 @@ public class NetUtils {
      * @return host
      */
     public static String getHost(InetAddress inetAddress) {
+//        if (inetAddress != null) {
+//            if (Constants.KUBERNETES_MODE) {
+//                String canonicalHost = inetAddress.getCanonicalHostName();
+//                String[] items = canonicalHost.split("\\.");
+//                if (items.length == 6 && "svc".equals(items[3])) {
+//                    return String.format("%s.%s", items[0], items[1]);
+//                }
+//                return canonicalHost;
+//            }
+//            return inetAddress.getHostAddress();
+//        }
+//        return null;
         if (inetAddress != null) {
             if (Constants.KUBERNETES_MODE) {
                 String canonicalHost = inetAddress.getCanonicalHostName();
-                String[] items = canonicalHost.split("\\.");
-                if (items.length == 6 && "svc".equals(items[3])) {
-                    return String.format("%s.%s", items[0], items[1]);
+                if (!canonicalHost.contains(".") || IP_PATTERN.matcher(canonicalHost).matches()) {
+                    String host = inetAddress.getHostName();
+                    if (STS_PATTERN.matcher(host).find()) {
+                        String stsHost = String.format("%s.%s", host, host.replaceFirst("\\d+$", "headless"));
+                        logger.info("################## stsHost {}", stsHost);
+                        return stsHost;
+                    } else {
+                        // TODO 以“-”分割 docker xxxxxxxxxxxx-7b8cd58644-wbdxn
+                        canonicalHost = getHostName(canonicalHost);
+                        logger.info("################## else stsHost {}", canonicalHost);
+                    }
+                } else if (canonicalHost.contains(".")) {
+                    logger.info("################## canonicalHost {}", canonicalHost);
+                    String[] items = canonicalHost.split("\\.");
+                    String itemHost = items[0];
+                    if (checkHostName(items[0])) {
+                        // dolphinscheduler-worker.ningbo-dc.svc.cluster.local
+                        itemHost = items[0];
+                        logger.info("################## itemHost0 {}", itemHost);
+                    } else if (checkHostName(items[1])) {
+                        // 10-244-2-21.dolphinscheduler-worker.ningbo-dc.svc.cluster.local
+                        itemHost = items[1];
+                        logger.info("################## itemHost1 {}", itemHost);
+                    }
+                    logger.info("################## itemHost-end {}", itemHost);
+                    return itemHost;
+                } else {
+                    //
+                    canonicalHost = getHostName(canonicalHost);
                 }
                 return canonicalHost;
             }
@@ -91,11 +133,39 @@ public class NetUtils {
         return null;
     }
 
-    public static String getHost() {
-        if (HOST_ADDRESS != null) {
-            return HOST_ADDRESS;
+    public static String getHostName(String canonicalHost) {
+        if (StringUtils.isNotBlank(canonicalHost) && canonicalHost.contains(Constants.SUBTRACT_STRING)) {
+            String[] hostNameArray = canonicalHost.split(Constants.SUBTRACT_STRING);
+            if (hostNameArray.length > HOST_NAME_LENGTH) {
+                StringBuilder hostNameBuilder = new StringBuilder();
+                for (int i = 0; i < hostNameArray.length - HOST_NAME_LENGTH; i++) {
+                    hostNameBuilder.append(hostNameArray[i]);
+                    // 结尾非“-”
+                    if (i < hostNameArray.length - HOST_NAME_INDEX) {
+                        hostNameBuilder.append(Constants.SUBTRACT_STRING);
+                    }
+                }
+                canonicalHost = hostNameBuilder.toString();
+            }
         }
+        return canonicalHost;
+    }
 
+
+    public static boolean checkHostName(String hostName) {
+        try {
+            InetAddress address = InetAddress.getByName(hostName);
+            return null != address ? Boolean.TRUE : Boolean.FALSE;
+        } catch (Exception e) {
+            logger.warn("################## {}", e.getMessage());
+        }
+        return Boolean.FALSE;
+    }
+
+    public static String getHost() {
+//        if (HOST_ADDRESS != null) {
+//            return HOST_ADDRESS;
+//        }
         InetAddress address = getLocalAddress();
         if (address != null) {
             HOST_ADDRESS = getHost(address);

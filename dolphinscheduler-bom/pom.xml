@@ -96,6 +96,8 @@
         <janino.version>3.0.16</janino.version>
         <snakeyaml.version>1.31</snakeyaml.version>
         <htrace.version>4.1.1</htrace.version>
+        <spring.alibaba.cloud.version>2.2.3.RELEASE</spring.alibaba.cloud.version>
+        <fastjson.version>1.2.60</fastjson.version>
     </properties>
 
     <dependencyManagement>
@@ -374,7 +376,7 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql-connector.version}</version>
-                <scope>test</scope>
+                <scope>compile</scope>
             </dependency>
 
             <dependency>
@@ -768,6 +770,39 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+                <version>${spring.alibaba.cloud.version}</version>
+            </dependency>
+
+            <!-- SpringCloud Ailibaba Nacos Config -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+                <version>${spring.alibaba.cloud.version}</version>
+            </dependency>
+            <!--需要远程调用，放开此处 -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-openfeign</artifactId>
+                <version>${spring.alibaba.cloud.version}</version>
+            </dependency>
+
+            <!--熔断降级-->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+                <version>${spring.alibaba.cloud.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

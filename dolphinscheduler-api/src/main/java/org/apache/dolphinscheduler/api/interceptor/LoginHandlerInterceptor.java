@@ -17,6 +17,8 @@
 
 package org.apache.dolphinscheduler.api.interceptor;
 
+import org.apache.dolphinscheduler.api.converter.UserDetail2UserConverter;
+import org.apache.dolphinscheduler.api.dto.UserDetail;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.security.Authenticator;
 import org.apache.dolphinscheduler.common.constants.Constants;
@@ -24,7 +26,7 @@ import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.thread.ThreadLocalContext;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
-
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -52,36 +55,42 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
     @Autowired
     private Authenticator authenticator;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+
+    private final String head = "USER:LOGIN:TOKEN:";
+
+
+    @Autowired
+    private UserDetail2UserConverter userDetail2UserConverter;
+
     /**
      * Intercept the execution of a handler. Called after HandlerMapping determined
      *
-     * @param request current HTTP request
+     * @param request  current HTTP request
      * @param response current HTTP response
-     * @param handler chosen handler to execute, for type and/or instance evaluation
+     * @param handler  chosen handler to execute, for type and/or instance evaluation
      * @return boolean true or false
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // get token
-        String token = request.getHeader("token");
-        User user;
-        if (StringUtils.isEmpty(token)) {
-            user = authenticator.getAuthUser(request);
+        String authZtToken = request.getHeader("token");
+        String userDetailStr = redisTemplate.opsForValue().get(head + authZtToken);
+        if (StringUtils.isEmpty(userDetailStr)) {
             // if user is null
-            if (user == null) {
-                response.setStatus(HttpStatus.SC_UNAUTHORIZED);
-                logger.info("user does not exist");
-                return false;
-            }
-        } else {
-            user = userMapper.queryUserByToken(token, new Date());
-            if (user == null) {
-                response.setStatus(HttpStatus.SC_UNAUTHORIZED);
-                logger.info("user token has expired");
-                return false;
-            }
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            logger.info("user does not exist");
+            return false;
         }
-
+        UserDetail userDetail = JSONObject.parseObject(userDetailStr, UserDetail.class);
+        User user = userDetail2UserConverter.convert(userDetail);
+        if (user == null) {
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            logger.info("user token has expired");
+            return false;
+        }
         // check user state
         if (user.getState() == Flag.NO.ordinal()) {
             response.setStatus(HttpStatus.SC_UNAUTHORIZED);

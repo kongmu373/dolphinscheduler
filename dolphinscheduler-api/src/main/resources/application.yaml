@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+app:
+  redis:
+    host: 172.16.125.20
+    port: 6035
+    expireTime: 900
 server:
   port: 12345
   servlet:
@@ -176,14 +180,36 @@ traffic:
 
 ---
 spring:
+  application:
+    name: dol-api
   config:
     activate:
       on-profile: mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/dolphinscheduler
+    url: jdbc:mysql://172.16.125.20:3306/dolphinscheduler
     username: root
-    password: root
+    password: ca89b89t23g15f23
   quartz:
     properties:
       org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+  cloud:
+    nacos:
+      discovery:
+        # 服务注册地址
+        server-addr: localhost:8848
+        server: dol-api
+      config:
+        # 配置中心地址
+        server-addr: localhost:8848
+        # 配置文件格式
+        file-extension: yml
+        max-retry: 15
+  redis:
+    database: 0
+    host: ${app.redis.host}
+    port: ${app.redis.port}
+    pool:
+      max-idle: 10
+      min-idle: 5
+      max-active: 100

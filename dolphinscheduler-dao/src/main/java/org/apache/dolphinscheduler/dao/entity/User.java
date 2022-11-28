@@ -17,6 +17,10 @@
 
 package org.apache.dolphinscheduler.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.common.enums.UserType;
 
 import java.util.Date;
@@ -29,6 +33,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 @Data
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("t_ds_user")
 public class User {
 

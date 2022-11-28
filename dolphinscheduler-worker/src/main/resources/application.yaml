@@ -50,6 +50,7 @@ registry:
     connection-timeout: 9s
     block-until-connected: 600ms
     digest: ~
+    name:
 
 worker:
   # worker listener port
