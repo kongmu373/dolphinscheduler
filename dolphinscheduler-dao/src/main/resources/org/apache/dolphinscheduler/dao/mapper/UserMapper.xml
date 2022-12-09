@@ -139,4 +139,10 @@
         from t_ds_user
         where state = 1
     </select>
+    <select id="queryByEmailAccurately" resultType="org.apache.dolphinscheduler.dao.entity.User">
+        select
+        <include refid="baseSql"/>
+        from t_ds_user
+        where email=#{email}
+    </select>
 </mapper>

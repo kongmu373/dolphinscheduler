@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+
 @Component
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -25,11 +27,22 @@ public class UserDetail2UserConverter extends Converter<UserDetail, User> {
 
         Long id = userDetail.getId();
         Integer superAdmin = userDetail.getSuperAdmin();
+
         //check if user exist
-        User user = usersService.getUserByUserName(String.valueOf(id));
+        User user = usersService.getUserByEmail(String.valueOf(id));
         if (user == null) {
-            user = usersService.createUser(superAdmin != null && superAdmin == 1 ?
-                    UserType.ADMIN_USER : UserType.GENERAL_USER, String.valueOf(id), userDetail.getEmail());
+            user = usersService.getUserByUserName(userDetail.getUsername());
+            if(user == null) {
+                user = usersService.createUser(superAdmin != null && superAdmin == 1 ?
+                        UserType.ADMIN_USER : UserType.GENERAL_USER, userDetail.getUsername(), String.valueOf(id));
+            } else {
+                try {
+                    usersService.updateUser(user,user.getId(),user.getUserName(),null,String.valueOf(id),
+                            user.getTenantId(),user.getPhone(),user.getQueue(),user.getState(),user.getTimeZone());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
         return user;
     }

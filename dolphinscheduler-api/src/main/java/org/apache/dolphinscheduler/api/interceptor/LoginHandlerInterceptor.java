@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -65,6 +66,10 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
     @Autowired
     private UserDetail2UserConverter userDetail2UserConverter;
 
+
+    @Value("${dev.token:e2995213266f0248f1df159cc66aaaa4}")
+    private String devToken;
+
     /**
      * Intercept the execution of a handler. Called after HandlerMapping determined
      *
@@ -77,6 +82,10 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // get token
         String authZtToken = request.getHeader("token");
+        // 开发用，上线删除
+        if(StringUtils.isEmpty(authZtToken)) {
+            authZtToken = devToken;
+        }
         String userDetailStr = redisTemplate.opsForValue().get(head + authZtToken);
         if (StringUtils.isEmpty(userDetailStr)) {
             // if user is null

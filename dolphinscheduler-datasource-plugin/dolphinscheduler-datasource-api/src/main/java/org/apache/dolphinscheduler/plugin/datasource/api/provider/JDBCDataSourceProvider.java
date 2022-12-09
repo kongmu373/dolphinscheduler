@@ -101,6 +101,9 @@ public class JDBCDataSourceProvider {
         try {
             final Class<?> clazz = Class.forName(drv, true, classLoader);
             final Driver driver = (Driver) clazz.newInstance();
+            if(StringUtils.isBlank(properties.getDriverClassName())) {
+                properties.setDriverClassName(drv);
+            }
             if (!driver.acceptsURL(properties.getJdbcUrl())) {
                 logger.warn("Jdbc driver loading error. Driver {} cannot accept url.", drv);
                 throw new RuntimeException("Jdbc driver loading error.");

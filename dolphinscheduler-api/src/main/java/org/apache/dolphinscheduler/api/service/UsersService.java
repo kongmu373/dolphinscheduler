@@ -62,6 +62,16 @@ public interface UsersService {
      */
     User getUserByUserName(String userName);
 
+
+    /**
+     * get user by email id
+     *
+     * @param email user name
+     * @return exist user or null
+     */
+    User getUserByEmail(String email);
+
+
     /**
      * query user by id
      *

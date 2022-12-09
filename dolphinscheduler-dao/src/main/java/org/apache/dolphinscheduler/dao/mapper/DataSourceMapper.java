@@ -109,4 +109,6 @@ public interface DataSourceMapper extends BaseMapper<DataSource> {
      * @return
      */
     IPage<DataSource> selectPagingByIds(Page<DataSource> dataSourcePage, @Param("dataSourceIds")List<Integer> dataSourceIds, @Param("name")String name);
+
+    void insertData(DataSource dataSource);
 }

@@ -601,6 +601,43 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
         return result;
     }
 
+    @Override
+    public Result doneUpdateDataSource(User loginUser, DataSource dataSource) {
+        DataSource ds = dataSourceMapper.selectById(dataSource.getId());
+        if (null != ds && ds.getId() > 0) {
+            dataSource.setUserId(loginUser.getId());
+            dataSource.setUserName(loginUser.getUserName());
+            dataSource.setUpdateTime(new Date());
+            dataSourceMapper.updateById(dataSource);
+        } else {
+            dataSource.setUserId(loginUser.getId());
+            dataSource.setUserName(loginUser.getUserName());
+            dataSource.setCreateTime(new Date());
+            dataSource.setUpdateTime(new Date());
+            logger.info("doneUpdateDataSource dataSource: {}", dataSource);
+            dataSourceMapper.insertData(dataSource);
+        }
+        return new Result().success(null);
+    }
+
+    @Override
+    public Result doneCreateDataSource(User loginUser, DataSource dataSource) {
+        dataSource.setUserId(loginUser.getId());
+        dataSource.setUserName(loginUser.getUserName());
+        dataSource.setCreateTime(new Date());
+        dataSource.setUpdateTime(new Date());
+        logger.info("doneCreateDataSource dataSource: {}", dataSource);
+        dataSourceMapper.insertData(dataSource);
+        return new Result().success(null);
+    }
+
+    @Override
+    public Result deleteById(Integer id) {
+        dataSourceMapper.deleteById(id);
+        datasourceUserMapper.deleteByDatasourceId(id);
+        return new Result().success(null);
+    }
+
     private List<ParamsOptions> getParamsOptions(List<String> columnList) {
         List<ParamsOptions> options = null;
         if (CollectionUtils.isNotEmpty(columnList)) {

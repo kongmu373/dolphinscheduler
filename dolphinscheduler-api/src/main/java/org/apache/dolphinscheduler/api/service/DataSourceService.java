@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.api.service;
 
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.dao.entity.DataSource;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
@@ -143,4 +144,10 @@ public interface DataSourceService {
      * @return
      */
     Map<String, Object> getTableColumns(Integer datasourceId,String tableName);
+
+    Result doneUpdateDataSource(User loginUser, DataSource dataSource);
+
+    Result doneCreateDataSource(User loginUser, DataSource dataSource);
+
+    Result deleteById(Integer id);
 }

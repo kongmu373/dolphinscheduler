@@ -21,6 +21,10 @@
     <sql id="baseSql">
         id, name, note, type, user_id, connection_params, create_time, update_time
     </sql>
+    <insert id="insertData">
+        insert t_ds_datasource(id, name, note, type, user_id, connection_params, create_time, update_time)
+        values(#{id}, #{name}, #{note}, #{type}, #{userId}, #{connectionParams}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    </insert>
     <select id="queryDataSourceByType" resultType="org.apache.dolphinscheduler.dao.entity.DataSource">
         select
         <include refid="baseSql"/>

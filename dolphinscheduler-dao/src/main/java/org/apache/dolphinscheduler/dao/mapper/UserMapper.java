@@ -178,4 +178,6 @@ public interface UserMapper extends BaseMapper<User> {
      * @return
      */
     List<User> queryEnabledUsers();
+
+    User queryByEmailAccurately(@Param("email") String email);
 }

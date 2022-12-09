@@ -256,6 +256,11 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         return userMapper.queryByUserNameAccurately(userName);
     }
 
+    @Override
+    public User getUserByEmail(String email) {
+        return userMapper.queryByEmailAccurately(email);
+    }
+
     /**
      * query user by id
      *
@@ -419,10 +424,10 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         }
 
         if (StringUtils.isNotEmpty(email)) {
-            if (!CheckUtils.checkEmail(email)) {
-                putMsg(result, Status.REQUEST_PARAMS_NOT_VALID_ERROR, email);
-                return result;
-            }
+//            if (!CheckUtils.checkEmail(email)) {
+//                putMsg(result, Status.REQUEST_PARAMS_NOT_VALID_ERROR, email);
+//                return result;
+//            }
             user.setEmail(email);
         }
 
