@@ -33,6 +33,6 @@ if [[ "$DEBUG" == "true" ]]; then
 fi
 
 
-java $JAVA_OPTS \
+$JAVA_HOME/bin/java $JAVA_OPTS \
   -cp "$DOLPHINSCHEDULER_HOME/conf":"$DOLPHINSCHEDULER_HOME/libs/*" \
   org.apache.dolphinscheduler.alert.AlertServer
